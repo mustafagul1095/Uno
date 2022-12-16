@@ -56,7 +56,7 @@ public class DeckInstantiater : MonoBehaviour
         _spawnedCardDeck = new List<Card>();
         for (int i = 0; i<_sortedDeck.Count; i++)
         {
-            _spawnedCardDeck.Add(Instantiate(_mixedCardDeck[i], transform.position+ Vector3.up * i * cardThickness, Quaternion.Euler(new Vector3(-90, 0, 0)),transform)); 
+            _spawnedCardDeck.Add(Instantiate(_mixedCardDeck[i], transform.position+ Vector3.up * i * cardThickness, Quaternion.Euler(new Vector3(-90, 0, 0)),transform));
         }
     }
 
@@ -66,5 +66,10 @@ public class DeckInstantiater : MonoBehaviour
         Destroy(_spawnedCardDeck[_spawnedCardDeck.Count-1].gameObject);
         _spawnedCardDeck.Remove(_spawnedCardDeck[_spawnedCardDeck.Count-1]);
         return card;
+    }
+
+    public void EnableDeckClick()
+    {
+        _spawnedCardDeck[_spawnedCardDeck.Count - 1].gameObject.GetComponent<BoxCollider>().enabled = true;
     }
 }

@@ -14,9 +14,11 @@ public class GameHandler : MonoBehaviour
 
     private int _playerNumber = 2;
     private bool _gameStarted = false;
-    private int _turn = 0;
+    private int _turn = 1;
 
-
+    private bool _gameDirection = false;
+    private bool _passTurnPlayed = false;
+    
     public void StartGame()
     {
         if (_gameStarted) {return;}
@@ -25,24 +27,25 @@ public class GameHandler : MonoBehaviour
         {
             if (i == 0)
             {
-                Player _player1 = Instantiate(playerPrefab, new Vector3(0, 0, -0.4f), Quaternion.identity);
+                Player _player1 = Instantiate(playerPrefab, new Vector3(0, 0, -0.4f), Quaternion.identity,transform);
+                _player1.SetPlayerActive(true);
                 players.Add(_player1);
             }
             if (i == 1)
             {
-                Player _player2 = Instantiate(playerPrefab, new Vector3(0.4f, 0, 0), Quaternion.identity);
+                Player _player2 = Instantiate(playerPrefab, new Vector3(0.4f, 0, 0), Quaternion.identity,transform);
                 _player2.transform.rotation = Quaternion.Euler(0,-90f,0);
                 players.Add(_player2);
             }
             if (i == 2)
             {
-                Player _player3 = Instantiate(playerPrefab, new Vector3(0, 0, 0.4f), Quaternion.identity);
+                Player _player3 = Instantiate(playerPrefab, new Vector3(0, 0, 0.4f), Quaternion.identity,transform);
                 _player3.transform.rotation = Quaternion.Euler(0,180f,0);
                 players.Add(_player3);
             }
             if (i == 3)
             {
-                Player _player4 = Instantiate(playerPrefab, new Vector3(-0.4f, 0, 0), Quaternion.identity);
+                Player _player4 = Instantiate(playerPrefab, new Vector3(-0.4f, 0, 0), Quaternion.identity,transform);
                 _player4.transform.rotation = Quaternion.Euler(0,90f,0);
                 players.Add(_player4);
             }
@@ -51,10 +54,13 @@ public class GameHandler : MonoBehaviour
         DealCards();
         _gameStarted = true;
         gameStartUI.enabled = false;
-        _turn = 1;
-        HandleTurn();
+        ActivatePlayer();
     }
 
+    public void Played()
+    {
+        PassTurn();
+    }
     public void SetPlayerNumber()
     {
         _playerNumber = playerNumDropDown.value+2;
@@ -71,15 +77,10 @@ public class GameHandler : MonoBehaviour
         }
     }
 
-    public void HandleTurn()
+    public void ActivatePlayer()
     {
         if (_turn > 0)
         {
-            for (int i = 0; i < _playerNumber; i++)
-            {
-                players[i].SetPlayerActive(false);
-                players[i].HideHand();
-            }
             players[_turn-1].SetPlayerActive(true);
             players[_turn-1].DisplayHand();
         }
@@ -87,15 +88,57 @@ public class GameHandler : MonoBehaviour
 
     public void PassTurn()
     {
-        if (_turn > 0 && _turn < _playerNumber)
-        {
-            _turn++;
-        }
+        IncrementTurn();
 
-        if (_turn == _playerNumber)
+        if (_passTurnPlayed)
         {
-            _turn = 1;
+            Debug.Log("PassTurnCalled");
+            IncrementTurn();
+            _passTurnPlayed = false;
+        }
+        StartCoroutine(DelayAction(0.1f));
+    }
+
+    private void IncrementTurn()
+    {
+        if (!_gameDirection)
+        {
+            if (_turn > 0 && _turn < _playerNumber)
+            {
+                _turn++;
+            }
+            else if (_turn == _playerNumber)
+            {
+                _turn = 1;
+            }
+        }
+        else
+        {
+            if (_turn > 1 && _turn <= _playerNumber)
+            {
+                _turn--;
+            }
+            else if (_turn == 1)
+            {
+                _turn = _playerNumber;
+            }
         }
     }
-    
+
+    IEnumerator DelayAction(float delayTime)
+    {
+        yield return new WaitForSeconds(delayTime);
+ 
+        ActivatePlayer();
+    }
+
+    private void OnReverse()
+    {
+        _gameDirection = !_gameDirection;
+    }
+
+    private void OnPassTurnPlayed()
+    {
+        _passTurnPlayed = true;
+    }
 }

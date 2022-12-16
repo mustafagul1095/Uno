@@ -267,7 +267,7 @@ public class Card : MonoBehaviour
         cardColor = _cardColor;
     }
     
-    public void SetPosition(Vector3 position)
+    public void SetLocalPosition(Vector3 position)
     {
         transform.localPosition = position;
     }

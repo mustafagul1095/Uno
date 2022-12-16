@@ -8,6 +8,8 @@ public class Player : MonoBehaviour
     [SerializeField] private List<Card> playerHand;
     [SerializeField] private DeckInstantiater deckInstantiater;
     [SerializeField] private PlayedCards playedCard;
+    [SerializeField] private Canvas playerPassTurnCanvas;
+    [SerializeField] private Canvas changeColorCanvas;
 
     private bool _playerActive = false;
     private Camera _camera;
@@ -21,29 +23,74 @@ public class Player : MonoBehaviour
     private void Start()
     {
         _camera = Camera.main;
+        deckInstantiater.EnableDeckClick();
     }
 
     private void Update()
     {
-        if (_playerActive)
-        {
-            DetectSelectionWithRaycast();
-        }
+        DetectSelectionWithRaycast();
     }
 
+    public void Pass()
+    {
+        SendMessageUpwards("Played",SendMessageOptions.DontRequireReceiver);
+        playerPassTurnCanvas.enabled = false;
+        changeColorCanvas.enabled = false;
+    }
+    private void Played()
+    {
+        SetPlayerActive(false);
+        PlaceHand();
+        HideHand();
+        deckInstantiater.EnableDeckClick();
+    }
     private void DetectSelectionWithRaycast()
     {
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0) && _playerActive)
         {
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
             if (Physics.Raycast(ray, out hit))
             {
-                playedCard.SetLastPlayedCardColor(hit.collider.gameObject.GetComponent<Card>().GetCardColor());
-                playedCard.SetLastPlayedCardValue(hit.collider.gameObject.GetComponent<Card>().GetCardValue());
-                playedCard.InstantiatePlayedCard();
-                Destroy(hit.collider.gameObject);
+                if (Math.Abs(hit.collider.gameObject.transform.position.x - deckInstantiater.transform.position.x) < 0.00001 &&
+                    Math.Abs(hit.collider.gameObject.transform.position.z - deckInstantiater.transform.position.z) < 0.00001 )
+                {
+                    DrawCardFromDeck();
+                    playerPassTurnCanvas.enabled = true;
+                    DisplayHand();
+                }
+                else
+                {
+                    playedCard.SetLastPlayedCardColor(hit.collider.gameObject.GetComponent<Card>().GetCardColor());
+                    playedCard.SetLastPlayedCardValue(hit.collider.gameObject.GetComponent<Card>().GetCardValue());
+                    playedCard.InstantiatePlayedCard();
+                    playerHand.Remove(hit.collider.gameObject.GetComponent<Card>());
+                    Destroy(hit.collider.gameObject);
+                    PlaceHand();
+                    if (playedCard.GetCardValue() == CardValue.Reverse)
+                    {
+                        ReverseCardPlayed();
+                        Pass();
+                    }
+                    else if (playedCard.GetCardColor() == CardColor.None)
+                    {
+                        if (playedCard.GetCardValue() == CardValue.ChangeColor)
+                        {
+                            ChangeColorPlayed();
+                        }
+                    }
+                    else if (playedCard.GetCardValue() == CardValue.Pass)
+                    {
+                        PassTurnPlayed();
+                        Pass();
+                    }
+                    else
+                    {
+                        Pass();
+                    }
+
+                }
             }
         }
     }
@@ -56,6 +103,16 @@ public class Player : MonoBehaviour
     {
         return _playerActive;
     }
+
+    public void SetPlayerHand(List<Card> _playerHand)
+    {
+        playerHand = _playerHand;
+    }
+
+    public List<Card> GetPlayerHand()
+    {
+        return playerHand;
+    }
     
     public void DrawCardFromDeck()
     {
@@ -65,19 +122,20 @@ public class Player : MonoBehaviour
         PlaceHand();
     }
 
-    private void PlaceHand()
+    public void PlaceHand()
     {
         if(playerHand.Count == 0){return;}
 
         for (int i = 0; i < playerHand.Count; i++)
         {
             playerHand[i].HideCard();
-            playerHand[i].SetPosition(new Vector3((i-playerHand.Count/2)*0.05f, i*0.0001f, 0));
+            playerHand[i].SetLocalPosition(new Vector3((i-playerHand.Count/2)*0.05f, i*0.0001f, 0));
         }
     }
 
     public void DisplayHand()
     {
+        Debug.Log("DisplayedHand");
         for (int i = 0; i < playerHand.Count; i++)
         {
             playerHand[i].ShowCard();
@@ -98,7 +156,63 @@ public class Player : MonoBehaviour
     {
         for (int i = 0; i < playerHand.Count; i++)
         {
-            playerHand[i].GetComponent<BoxCollider>().enabled = true;
+            if (CheckPlayable(playerHand[i]))
+            {
+                playerHand[i].GetComponent<BoxCollider>().enabled = true;
+                playerHand[i].SetLocalPosition(playerHand[i].transform.localPosition + new Vector3(0,0,0.01f));
+            }
+            else
+            {
+                playerHand[i].GetComponent<BoxCollider>().enabled = false;
+            }
         }
+    }
+
+    private bool CheckPlayable(Card card)
+    {
+        if (card.GetCardColor() == CardColor.None)
+        {
+            return true;
+        }
+        else
+        {
+            return (card.GetCardColor() == playedCard.GetCardColor() || card.GetCardValue() == playedCard.GetCardValue());
+        }
+    }
+
+    private void ReverseCardPlayed()
+    {
+        SendMessageUpwards("OnReverse",SendMessageOptions.DontRequireReceiver);
+    }
+
+    private void PassTurnPlayed()
+    {
+        SendMessageUpwards("OnPassTurnPlayed",SendMessageOptions.DontRequireReceiver);
+    }
+
+    private void ChangeColorPlayed()
+    {
+        changeColorCanvas.enabled = true;
+    }
+
+    public void YellowSelected()
+    {
+        playedCard.SetLastPlayedCardColor(CardColor.Yellow);
+        Pass();
+    }
+    public void GreenSelected()
+    {
+        playedCard.SetLastPlayedCardColor(CardColor.Green);
+        Pass();
+    }
+    public void RedSelected()
+    {
+        playedCard.SetLastPlayedCardColor(CardColor.Red);
+        Pass();
+    }
+    public void BlueSelected()
+    {
+        playedCard.SetLastPlayedCardColor(CardColor.Blue);
+        Pass();
     }
 }
