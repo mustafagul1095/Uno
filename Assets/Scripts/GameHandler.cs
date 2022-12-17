@@ -20,6 +20,7 @@ public class GameHandler : MonoBehaviour
     private bool _gameDirection = false;
     private bool _passTurnPlayed = false;
     private bool _plusFourPlayed = false;
+    private bool _plusTwoPlayed = false;
     
     public void StartGame()
     {
@@ -101,6 +102,21 @@ public class GameHandler : MonoBehaviour
                 
                 _plusFourPlayed = false;
             }
+            else if (_plusTwoPlayed)
+            {
+                currentPlayer.SetCantPlayCard(true);
+                currentPlayer.DisplayWhenPlusTwoPlayed();
+                if (playedCard.GetCardsToDrawForPass() > 1)
+                {
+                    playedCard.SetCardsToDrawForPass(playedCard.GetCardsToDrawForPass()+2);
+                }
+                else
+                {
+                    playedCard.SetCardsToDrawForPass(2);
+                }
+
+                _plusTwoPlayed = false;
+            }
             else
             {
                 currentPlayer.DisplayHand();
@@ -167,5 +183,10 @@ public class GameHandler : MonoBehaviour
     private void OnPlusFourPlayed()
     {
         _plusFourPlayed = true;
+    }
+
+    private void OnPlusTwoPlayed()
+    {
+        _plusTwoPlayed = true;
     }
 }

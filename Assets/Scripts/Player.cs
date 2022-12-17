@@ -108,6 +108,11 @@ public class Player : MonoBehaviour
                         PassTurnPlayed();
                         Pass();
                     }
+                    else if (playedCard.GetCardValue() == CardValue.PlusTwo)
+                    {
+                        PlusTwoPlayed();
+                        Pass();
+                    }
                     else
                     {
                         Pass();
@@ -186,6 +191,24 @@ public class Player : MonoBehaviour
             if (playerHand[i].GetCardValue() == CardValue.PlusFour)
             {
                 playerHand[i].GetComponent<BoxCollider>().enabled = true;
+                playerHand[i].SetLocalPosition(playerHand[i].transform.localPosition + new Vector3(0,0,0.01f));
+            }
+            else
+            {
+                playerHand[i].GetComponent<BoxCollider>().enabled = false;
+            }
+        }
+    }
+
+    public void DisplayWhenPlusTwoPlayed()
+    {
+        for (int i = 0; i < playerHand.Count; i++)
+        {
+            playerHand[i].ShowCard();
+            if (playerHand[i].GetCardValue() == CardValue.PlusFour || playerHand[i].GetCardValue() == CardValue.PlusFour)
+            {
+                playerHand[i].GetComponent<BoxCollider>().enabled = true;
+                playerHand[i].SetLocalPosition(playerHand[i].transform.localPosition + new Vector3(0,0,0.01f));
             }
             else
             {
@@ -253,6 +276,11 @@ public class Player : MonoBehaviour
     {
         ChangeColorPlayed();
         SendMessageUpwards("OnPlusFourPlayed", SendMessageOptions.DontRequireReceiver);
+    }
+
+    private void PlusTwoPlayed()
+    {
+        SendMessageUpwards("OnPlusTwoPlayed", SendMessageOptions.DontRequireReceiver);
     }
 
     private void ChangeColorPlayed()
