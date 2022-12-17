@@ -12,6 +12,7 @@ public class Player : MonoBehaviour
     [SerializeField] private Canvas changeColorCanvas;
 
     private bool _playerActive = false;
+    private int _cardsToDrawForPass = 1;
     private Camera _camera;
 
     private void Awake()
@@ -57,8 +58,17 @@ public class Player : MonoBehaviour
                     Math.Abs(hit.collider.gameObject.transform.position.z - deckInstantiater.transform.position.z) < 0.00001 )
                 {
                     DrawCardFromDeck();
-                    playerPassTurnCanvas.enabled = true;
-                    DisplayHand();
+                    if (_cardsToDrawForPass < 1)
+                    {
+                        playerPassTurnCanvas.enabled = true;
+                        DisplayHand();
+                        ActivateCards();
+                    }
+                    else
+                    {
+                        deckInstantiater.EnableDeckClick();
+                        DeactivateCards();
+                    }
                 }
                 else
                 {
@@ -78,6 +88,11 @@ public class Player : MonoBehaviour
                         if (playedCard.GetCardValue() == CardValue.ChangeColor)
                         {
                             ChangeColorPlayed();
+                        }
+
+                        if (playedCard.GetCardValue() == CardValue.PlusFour)
+                        {
+                            PlusFourPlayed();
                         }
                     }
                     else if (playedCard.GetCardValue() == CardValue.Pass)
@@ -113,6 +128,16 @@ public class Player : MonoBehaviour
     {
         return playerHand;
     }
+
+    public int GetCardsToDrawForPass()
+    {
+        return _cardsToDrawForPass;
+    }
+
+    public void SetCardsToDrawForPass(int cardsToDraw)
+    {
+        _cardsToDrawForPass = cardsToDraw;
+    }
     
     public void DrawCardFromDeck()
     {
@@ -120,6 +145,11 @@ public class Player : MonoBehaviour
         Card drawnCard1 = Instantiate(drawnCard, transform.position, Quaternion.Euler(new Vector3(90, 0, 0)), transform);
         playerHand.Add(drawnCard1);
         PlaceHand();
+        if (!_playerActive)
+        {
+            HideHand();
+        }
+        _cardsToDrawForPass--;
     }
 
     public void PlaceHand()
@@ -128,19 +158,33 @@ public class Player : MonoBehaviour
 
         for (int i = 0; i < playerHand.Count; i++)
         {
-            playerHand[i].HideCard();
             playerHand[i].SetLocalPosition(new Vector3((i-playerHand.Count/2)*0.05f, i*0.0001f, 0));
         }
     }
 
     public void DisplayHand()
     {
-        Debug.Log("DisplayedHand");
         for (int i = 0; i < playerHand.Count; i++)
         {
             playerHand[i].ShowCard();
         }
-        ActivateCards();
+        //ActivateCards();
+    }
+
+    public void DisplayWhenPlusFourPlayed()
+    {
+        for (int i = 0; i < playerHand.Count; i++)
+        {
+            playerHand[i].ShowCard();
+            if (playerHand[i].GetCardValue() == CardValue.PlusFour)
+            {
+                playerHand[i].GetComponent<BoxCollider>().enabled = true;
+            }
+            else
+            {
+                playerHand[i].GetComponent<BoxCollider>().enabled = false;
+            }
+        }
     }
     
     public void HideHand()
@@ -152,7 +196,15 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void ActivateCards()
+    public void DeactivateCards()
+    {
+        for (int i = 0; i < playerHand.Count; i++)
+        {
+            playerHand[i].GetComponent<BoxCollider>().enabled = false;
+        }
+    }
+
+    public void ActivateCards()
     {
         for (int i = 0; i < playerHand.Count; i++)
         {
@@ -182,12 +234,18 @@ public class Player : MonoBehaviour
 
     private void ReverseCardPlayed()
     {
-        SendMessageUpwards("OnReverse",SendMessageOptions.DontRequireReceiver);
+        SendMessageUpwards("OnReverse", SendMessageOptions.DontRequireReceiver);
     }
 
     private void PassTurnPlayed()
     {
-        SendMessageUpwards("OnPassTurnPlayed",SendMessageOptions.DontRequireReceiver);
+        SendMessageUpwards("OnPassTurnPlayed", SendMessageOptions.DontRequireReceiver);
+    }
+
+    private void PlusFourPlayed()
+    {
+        changeColorCanvas.enabled = true;
+        SendMessageUpwards("OnPlusFourPlayed", SendMessageOptions.DontRequireReceiver);
     }
 
     private void ChangeColorPlayed()

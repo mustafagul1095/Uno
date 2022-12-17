@@ -18,6 +18,7 @@ public class GameHandler : MonoBehaviour
 
     private bool _gameDirection = false;
     private bool _passTurnPlayed = false;
+    private bool _plusFourPlayed = false;
     
     public void StartGame()
     {
@@ -82,7 +83,25 @@ public class GameHandler : MonoBehaviour
         if (_turn > 0)
         {
             players[_turn-1].SetPlayerActive(true);
-            players[_turn-1].DisplayHand();
+            if (_plusFourPlayed)
+            {
+                players[_turn-1].DisplayWhenPlusFourPlayed();
+                if (players[_turn - 1].GetCardsToDrawForPass() > 1)
+                {
+                    players[_turn - 1].SetCardsToDrawForPass(players[_turn - 1].GetCardsToDrawForPass()+4);
+                }
+                else
+                {
+                    players[_turn - 1].SetCardsToDrawForPass(4);
+                }
+                
+                _plusFourPlayed = false;
+            }
+            else
+            {
+                players[_turn-1].DisplayHand();
+                players[_turn-1].ActivateCards();
+            }
         }
     }
 
@@ -92,7 +111,6 @@ public class GameHandler : MonoBehaviour
 
         if (_passTurnPlayed)
         {
-            Debug.Log("PassTurnCalled");
             IncrementTurn();
             _passTurnPlayed = false;
         }
@@ -140,5 +158,10 @@ public class GameHandler : MonoBehaviour
     private void OnPassTurnPlayed()
     {
         _passTurnPlayed = true;
+    }
+
+    private void OnPlusFourPlayed()
+    {
+        _plusFourPlayed = true;
     }
 }
