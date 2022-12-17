@@ -1645,6 +1645,7 @@ MonoBehaviour:
   players: []
   playerNumDropDown: {fileID: 1002479282}
   gameStartUI: {fileID: 968175569}
+  playedCard: {fileID: 808738232}
 --- !u!1 &1895077536
 GameObject:
   m_ObjectHideFlags: 0

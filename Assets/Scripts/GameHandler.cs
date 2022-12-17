@@ -11,6 +11,7 @@ public class GameHandler : MonoBehaviour
     [SerializeField] private List<Player> players;
     [SerializeField] private TMP_Dropdown playerNumDropDown;
     [SerializeField] private Canvas gameStartUI;
+    [SerializeField] private PlayedCards playedCard;
 
     private int _playerNumber = 2;
     private bool _gameStarted = false;
@@ -82,25 +83,28 @@ public class GameHandler : MonoBehaviour
     {
         if (_turn > 0)
         {
-            players[_turn-1].SetPlayerActive(true);
+            var currentPlayer = players[_turn-1];
+            currentPlayer.SetPlayerActive(true);
+            
             if (_plusFourPlayed)
             {
-                players[_turn-1].DisplayWhenPlusFourPlayed();
-                if (players[_turn - 1].GetCardsToDrawForPass() > 1)
+                currentPlayer.SetCantPlayCard(true);
+                currentPlayer.DisplayWhenPlusFourPlayed();
+                if (playedCard.GetCardsToDrawForPass() > 1)
                 {
-                    players[_turn - 1].SetCardsToDrawForPass(players[_turn - 1].GetCardsToDrawForPass()+4);
+                    playedCard.SetCardsToDrawForPass(playedCard.GetCardsToDrawForPass()+4);
                 }
                 else
                 {
-                    players[_turn - 1].SetCardsToDrawForPass(4);
+                    playedCard.SetCardsToDrawForPass(4);
                 }
                 
                 _plusFourPlayed = false;
             }
             else
             {
-                players[_turn-1].DisplayHand();
-                players[_turn-1].ActivateCards();
+                currentPlayer.DisplayHand();
+                currentPlayer.ActivateCards();
             }
         }
     }

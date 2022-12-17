@@ -12,7 +12,7 @@ public class Player : MonoBehaviour
     [SerializeField] private Canvas changeColorCanvas;
 
     private bool _playerActive = false;
-    private int _cardsToDrawForPass = 1;
+    private bool cantPlayCard = false;
     private Camera _camera;
 
     private void Awake()
@@ -37,6 +37,7 @@ public class Player : MonoBehaviour
         SendMessageUpwards("Played",SendMessageOptions.DontRequireReceiver);
         playerPassTurnCanvas.enabled = false;
         changeColorCanvas.enabled = false;
+        cantPlayCard = false;
     }
     private void Played()
     {
@@ -58,11 +59,18 @@ public class Player : MonoBehaviour
                     Math.Abs(hit.collider.gameObject.transform.position.z - deckInstantiater.transform.position.z) < 0.00001 )
                 {
                     DrawCardFromDeck();
-                    if (_cardsToDrawForPass < 1)
+                    if (playedCard.GetCardsToDrawForPass() < 1)
                     {
                         playerPassTurnCanvas.enabled = true;
-                        DisplayHand();
-                        ActivateCards();
+                        if (!cantPlayCard)
+                        {
+                            DisplayHand();
+                            ActivateCards();
+                        }
+                        else
+                        {
+                            DeactivateCards();
+                        }
                     }
                     else
                     {
@@ -128,15 +136,15 @@ public class Player : MonoBehaviour
     {
         return playerHand;
     }
-
-    public int GetCardsToDrawForPass()
+    
+    public bool GetCantPlayCard()
     {
-        return _cardsToDrawForPass;
+        return cantPlayCard;
     }
 
-    public void SetCardsToDrawForPass(int cardsToDraw)
+    public void SetCantPlayCard(bool cantPlay)
     {
-        _cardsToDrawForPass = cardsToDraw;
+        cantPlayCard = cantPlay;
     }
     
     public void DrawCardFromDeck()
@@ -149,7 +157,7 @@ public class Player : MonoBehaviour
         {
             HideHand();
         }
-        _cardsToDrawForPass--;
+        playedCard.SetCardsToDrawForPass(playedCard.GetCardsToDrawForPass()-1);
     }
 
     public void PlaceHand()
@@ -168,7 +176,6 @@ public class Player : MonoBehaviour
         {
             playerHand[i].ShowCard();
         }
-        //ActivateCards();
     }
 
     public void DisplayWhenPlusFourPlayed()
@@ -244,13 +251,14 @@ public class Player : MonoBehaviour
 
     private void PlusFourPlayed()
     {
-        changeColorCanvas.enabled = true;
+        ChangeColorPlayed();
         SendMessageUpwards("OnPlusFourPlayed", SendMessageOptions.DontRequireReceiver);
     }
 
     private void ChangeColorPlayed()
     {
         changeColorCanvas.enabled = true;
+        playerPassTurnCanvas.enabled = false;
     }
 
     public void YellowSelected()

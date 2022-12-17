@@ -9,6 +9,17 @@ public class PlayedCards : MonoBehaviour
 
     private CardColor _cardColor;
     private CardValue _cardValue;
+    private int _cardsToDrawForPass = 1;
+    
+    public int GetCardsToDrawForPass()
+    {
+        return _cardsToDrawForPass;
+    }
+
+    public void SetCardsToDrawForPass(int cardsToDraw)
+    {
+        _cardsToDrawForPass = cardsToDraw;
+    }
     
     public void SetLastPlayedCardValue(CardValue cardValue)
     {
