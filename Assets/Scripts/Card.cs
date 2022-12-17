@@ -13,7 +13,6 @@ public enum CardColorValue{RedOne, RedTwo, RedThree, RedFour, RedFive, RedSix, R
 
 public class Card : MonoBehaviour
 {
-    // public Action OnSelect;
     
     [SerializeField] private CardValue cardValue;
     [SerializeField] private CardColor cardColor;

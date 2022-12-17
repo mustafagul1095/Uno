@@ -10,6 +10,7 @@ public class PlayedCards : MonoBehaviour
     private CardColor _cardColor;
     private CardValue _cardValue;
     private int _cardsToDrawForPass = 1;
+    private bool _played = false;
     
     public int GetCardsToDrawForPass()
     {
@@ -41,6 +42,15 @@ public class PlayedCards : MonoBehaviour
         return _cardValue;
     }
 
+    public bool GetPlayed()
+    {
+        return _played;
+    }
+
+    public void SetPlayed(bool isPlayed)
+    {
+        _played = isPlayed;
+    }
     public void InstantiatePlayedCard()
     {
         Destroy(gameObject.transform.GetChild(0).gameObject);

@@ -86,6 +86,9 @@ public class Player : MonoBehaviour
                     playerHand.Remove(hit.collider.gameObject.GetComponent<Card>());
                     Destroy(hit.collider.gameObject);
                     PlaceHand();
+                    
+                    playedCard.SetPlayed(true);
+                    
                     if (playedCard.GetCardValue() == CardValue.Reverse)
                     {
                         ReverseCardPlayed();
@@ -238,7 +241,7 @@ public class Player : MonoBehaviour
     {
         for (int i = 0; i < playerHand.Count; i++)
         {
-            if (CheckPlayable(playerHand[i]))
+            if (CheckPlayable(playerHand[i]) || !playedCard.GetPlayed())
             {
                 playerHand[i].GetComponent<BoxCollider>().enabled = true;
                 playerHand[i].SetLocalPosition(playerHand[i].transform.localPosition + new Vector3(0,0,0.01f));
